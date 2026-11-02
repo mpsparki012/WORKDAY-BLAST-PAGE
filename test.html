@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#12151f"><link href="https://fonts.googleapis.com/css2?family=Bungee&family=Figtree:wght@400;700&display=swap" rel="stylesheet"><title>Become a Workday Blast tester</title><style>
+:root{--ink:#12151f;--panel:#1b2030;--line:#2c344b;--text:#f1ece0;--mute:#a7adbf;--accent:#7bd957}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:var(--text);font:400 1.05rem/1.65 Figtree,system-ui,sans-serif}
+h1,h2{font-family:Bungee,Impact,sans-serif;font-weight:400;line-height:1.1}h1{font-size:clamp(2rem,5vw,3rem);margin:10px 0 12px}h2{font-size:1.4rem;margin:34px 0 8px}
+a{color:var(--accent)}.wrap{max-width:760px;margin:0 auto;padding:22px 20px 60px}
+.back{text-decoration:none;color:var(--mute)}.lead{color:var(--mute)}
+.btn{display:inline-block;background:var(--accent);color:#10131a;font:700 1rem Figtree,sans-serif;text-decoration:none;padding:13px 22px;border-radius:12px;box-shadow:0 5px 0 rgba(0,0,0,.45)}
+.btn.off{background:var(--line);color:var(--mute);pointer-events:none}
+.step{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:20px 20px 20px 66px;margin:16px 0;position:relative}
+.step:before{content:attr(data-n);position:absolute;left:16px;top:18px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#10131a;display:grid;place-items:center;font:400 1.1rem Bungee,sans-serif}
+.step h2{margin:0 0 6px;font-size:1.15rem}.step p{margin:0 0 12px;color:var(--mute)}
+.step.done{opacity:.6}.note{border-left:4px solid var(--accent);padding-left:14px;color:var(--mute)}
+li{margin:6px 0}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+</style></head><body><div class="wrap">
+<a class="back" href="index.html">← Back to Workday Blast</a>
+<h1>Become a tester in 3 steps</h1>
+<p class="lead">It takes about a minute. Use the Google account you are signed in with on your Android phone.</p>
+
+<div class="step" data-n="1" id="s1"><h2>Join the tester group</h2><p>This tells Google Play you are allowed to test. Sign in with the same Google account as your phone, then press "Join group".</p><a class="btn" id="group" target="_blank" rel="noopener">Join the Google Group</a></div>
+<div class="step" data-n="2" id="s2"><h2>Opt in on Google Play</h2><p>Open this link on your Android phone and press "Become a tester". It only works after step 1.</p><a class="btn" id="optin" target="_blank" rel="noopener">Open the test page</a></div>
+<div class="step" data-n="3" id="s3"><h2>Install and play</h2><p>Install Workday Blast from Google Play, play a few rounds, and keep it installed for the whole test period (14 days). Google counts installed days.</p><a class="btn" id="store" target="_blank" rel="noopener">Open on Google Play</a></div>
+
+<h2>If something does not work</h2>
+<ul class="lead"><li>The Play page says "not available": wait a few minutes after joining the group, and check you use the same Google account on the phone.</li><li>You opened the link on a computer: open it on your Android phone instead.</li><li>Still stuck: email <a id="mail" href="#">the developer</a> with a screenshot.</li></ul>
+
+<h2>What to tell me</h2>
+<p class="note">Anything that crashes, feels slow, is confusing, or is too hard or too easy. Mention your phone model and which chapter or mode you were in.</p>
+<p><a href="privacy.html">Privacy policy</a></p>
+</div>
+<script>
+// ---- EDIT THESE before publishing ----
+const CONFIG={
+  GROUP_URL:"https://groups.google.com/g/YOUR-TESTER-GROUP",
+  OPT_IN_URL:"https://play.google.com/apps/testing/YOUR.PACKAGE.NAME",
+  STORE_URL:"https://play.google.com/store/apps/details?id=YOUR.PACKAGE.NAME",
+  EMAIL:"you@example.com"
+};
+const set=(id,u)=>{const a=document.getElementById(id);if(u.includes("YOUR")){a.classList.add("off");a.textContent+=" (link not set yet)"}else a.href=u};
+set("group",CONFIG.GROUP_URL);set("optin",CONFIG.OPT_IN_URL);set("store",CONFIG.STORE_URL);
+document.getElementById("mail").href="mailto:"+CONFIG.EMAIL+"?subject="+encodeURIComponent("Workday Blast tester help");
+</script></body></html>
