@@ -71,6 +71,24 @@ pre{margin:0;background:#0b0d14;border:2px solid var(--line);border-radius:var(-
 details{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:700}details p{margin:10px 0 0;color:var(--mute)}
 footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--mute);font-size:.92rem}
+.v3d{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+.v3d-tabs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.v3d-grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.v3d-grp>span{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin-right:2px}
+.v3d-tabs button,.v3d-tools button{background:var(--panel);color:var(--text);border:2px solid var(--line);border-radius:99px;padding:7px 15px;cursor:pointer;font:600 .95rem Figtree,sans-serif}
+.v3d-tabs button[aria-selected=true],.v3d-tools button[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--panel))}
+.v3d-stage{position:relative;height:clamp(300px,52vw,460px);border:2px solid var(--line);border-radius:var(--radius);overflow:hidden;background:radial-gradient(ellipse at 50% 85%,#2a3350 0,#171c2b 62%)}
+#v3dcv{position:absolute;inset:0;width:100%;height:100%;background:transparent;image-rendering:auto;border-radius:0}
+.v3d-msg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:var(--mute);pointer-events:none}
+.v3d-msg:empty{display:none}
+.v3d-tools{position:absolute;right:10px;top:10px}
+.v3d-hint{position:absolute;left:12px;bottom:8px;right:12px;font-size:.8rem;color:var(--mute);pointer-events:none}
+.v3d-info h3{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.v3d-info .pill{font:700 .75rem Figtree,sans-serif;letter-spacing:.06em;text-transform:uppercase;border:2px solid var(--accent);color:var(--accent);border-radius:99px;padding:3px 10px}
+.v3d-info p{margin:10px 0 0}
+.v3d-info .facts{grid-template-columns:1fr 1fr;margin-top:16px}
+#morefoes{margin-top:22px}
+@media(max-width:820px){.v3d{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:820px){.hero,.chap,.code{grid-template-columns:1fr}.chaplist,.tabs{flex-direction:row;flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
@@ -130,11 +148,24 @@ footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--mute);fo
 
 <section id="bosses"><div class="wrap">
  <h2>Meet the monsters and bosses</h2>
- <p class="sub">Every chapter adds new enemies with their own tricks. Tap a group to see them in the real game.</p>
- <div class="code">
+ <p class="sub">These are the real 3D models from the game. Pick one, then drag to turn it around and pinch or scroll to zoom.</p>
+ <div class="v3d" id="v3d">
+  <div class="v3d-tabs" id="v3dtabs" role="tablist" aria-label="Monsters and bosses"></div>
+  <div class="v3d-stage" id="v3dstage">
+   <canvas id="v3dcv" role="img" aria-label="Interactive 3D model of the selected monster"></canvas>
+   <div class="v3d-msg" id="v3dmsg">Loading the 3D models...</div>
+   <div class="v3d-tools"><button type="button" id="v3dspin" aria-pressed="true">Auto-rotate</button></div>
+   <div class="v3d-hint">Each grid square is one arena cell. Tap the model first, then pinch or scroll to zoom.</div>
+  </div>
+  <div class="card v3d-info" id="v3dinfo" role="tabpanel" aria-live="polite"></div>
+ </div>
+ <details id="morefoes">
+  <summary>More foes and story bosses (screenshots from the game)</summary>
+  <div class="code" style="margin-top:14px">
   <div class="tabs" role="tablist" id="mobtabs"></div>
   <div><img id="mobimg" src="assets/mobs_small.jpg" alt="" width="1280" height="640" style="width:100%;height:auto;display:block;border:2px solid var(--line);border-radius:var(--radius)"><p class="why" id="mobcap"></p></div>
  </div>
+ </details>
 </div></section>
 
 <section id="code"><div class="wrap">
@@ -256,6 +287,97 @@ const MOBS=[["Small monsters","mobs_small","Crab (shielded front), Scorpion (bur
 const mt=$("#mobtabs");
 MOBS.forEach((x,i)=>{const b=document.createElement("button");b.textContent=x[0];b.onclick=()=>{[...mt.children].forEach((y,j)=>y.setAttribute("aria-selected",j===i));$("#mobimg").src="assets/"+x[1]+".jpg";$("#mobimg").alt=x[2];$("#mobcap").textContent=x[2]};mt.append(b)});
 mt.children[0].click();
+
+// ---- 3D monster showcase (three.js r128, self-hosted, loaded only when the section nears the screen) ----
+const FOES=[
+ {id:"goriba",name:"Goriba",kind:"Boss",where:"Green Meadow",hp:"10 hits",text:"A huge gorilla. Its ground pound stuns everyone close by, and it charges down a lane, smashing crates until something stops it. Every flame staggers it."},
+ {id:"mana_manananggal",name:"Mana Manananggal",kind:"Boss",where:"Cemetery Drive",hp:"12 hits",text:"Her winged upper body flies over everything, firing slow purple orbs and clawing up close. Bomb the glowing lower body for double damage and a long stun."},
+ {id:"bomber",name:"Bomber",kind:"Monster",where:"Red Canyon, Space Station, Machine Factory",hp:"1 hit",text:"Runs at you, flashes red, then drops a short-fuse bomb and blows itself up. Keep your distance and it goes off harmlessly."},
+ {id:"skeleton",name:"Skeleton",kind:"Monster",where:"Red Canyon, Cemetery Drive",hp:"2 hits",text:"Walks up and swings a club after a short wind-up. Step away in time and the swing misses."},
+ {id:"mimic",name:"Mimic",kind:"Monster",where:"Red Canyon, Space Station, Machine Factory",hp:"2 hits",text:"Hides inside a crate. Blast the crate and it jumps out dazed, then chases you and bites."},
+ {id:"helirov",name:"Helirov",kind:"Monster",where:"Space Station, Machine Factory",hp:"3 hits",text:"A flying machine that hovers over walls and rocks, then drops a bomb beneath itself when you get close."}
+];
+(function(){
+ const box=$("#v3d"),stage=$("#v3dstage"),cv=$("#v3dcv"),msg=$("#v3dmsg"),info=$("#v3dinfo"),tabs=$("#v3dtabs");
+ const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+ let T=null,renderer,scene,camera,controls,loader,current=null,parts={},cache={},started=false,visible=false,failed=false,wanted=FOES[0],t0=performance.now(),spin=!reduce;
+ function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+ function fail(){failed=true;msg.textContent="The 3D view needs WebGL and a web server, so it is not available here. The screenshots below show the same foes in the game.";$("#morefoes").open=true}
+ // tabs + info (work even before three.js has loaded)
+ const buttons={};
+ [["Bosses","Boss"],["Monsters","Monster"]].forEach(g=>{
+  const grp=el("div","v3d-grp");grp.append(el("span","",g[0]));
+  FOES.filter(f=>f.kind===g[1]).forEach(f=>{
+   const b=el("button","",f.name);b.type="button";b.setAttribute("role","tab");
+   b.onclick=()=>pick(f);buttons[f.id]=b;grp.append(b)});
+  tabs.append(grp)});
+ function showInfo(f){
+  info.replaceChildren();
+  const h=el("h3","",f.name);h.append(el("span","pill",f.kind));
+  info.append(h,el("p","",f.text));
+  const facts=el("div","facts");
+  [["Found in",f.where],["Health",f.hp]].forEach(r=>{const d=el("div");d.append(el("b","",r[0]),document.createTextNode(r[1]));facts.append(d)});
+  info.append(facts)}
+ function pick(f){
+  wanted=f;
+  FOES.forEach(x=>buttons[x.id].setAttribute("aria-selected",x===f));
+  showInfo(f);
+  if(T)load(f)}
+ function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=no;document.head.append(s)})}
+ function start(){
+  if(started)return;started=true;
+  loadScript("assets/vendor/three.min.js")
+   .then(()=>Promise.all([loadScript("assets/vendor/OrbitControls.js"),loadScript("assets/vendor/GLTFLoader.js")]))
+   .then(init).catch(fail)}
+ function init(){
+  T=window.THREE;
+  try{renderer=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true})}catch(e){return fail()}
+  renderer.outputEncoding=T.sRGBEncoding;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  scene=new T.Scene();camera=new T.PerspectiveCamera(40,1,0.1,200);
+  controls=new T.OrbitControls(camera,cv);controls.enableDamping=true;controls.autoRotate=spin;controls.autoRotateSpeed=1.6;controls.enableZoom=false;
+  // wheel / pinch zoom only after the model has been clicked or tapped, so the page keeps scrolling normally
+  cv.addEventListener("pointerdown",()=>{controls.enableZoom=true});
+  stage.addEventListener("pointerleave",()=>{controls.enableZoom=false});
+  scene.add(new T.HemisphereLight(0xffffff,0x8a8f9c,0.95));
+  const sun=new T.DirectionalLight(0xffffff,0.95);sun.position.set(-4,8,6);scene.add(sun);
+  const fill=new T.DirectionalLight(0xbcd0ff,0.35);fill.position.set(5,2,-6);scene.add(fill);
+  const grid=new T.GridHelper(24,12,0x5b6890,0x38415f);grid.material.transparent=true;grid.material.opacity=0.8;scene.add(grid);
+  loader=new T.GLTFLoader();
+  new ResizeObserver(resize).observe(stage);resize();
+  load(wanted);loop()}
+ function resize(){if(!renderer)return;const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+ function load(f){
+  msg.textContent="Loading "+f.name+"...";
+  if(cache[f.id])return place(f,cache[f.id]);
+  loader.load("assets/models/"+f.id+".glb",g=>{cache[f.id]=g.scene;place(f,g.scene)},undefined,()=>{if(wanted===f)fail()})}
+ function place(f,obj){
+  if(wanted!==f)return;
+  if(current)scene.remove(current);
+  current=obj;scene.add(current);parts={};
+  ["Rotor","TailRotor","WingL","WingR","UpperBody","Orb"].forEach(n=>{const o=current.getObjectByName(n);if(o)parts[n]={o:o,y:o.position.y}});
+  const b=new T.Box3().setFromObject(current),c=b.getCenter(new T.Vector3()),sz=b.getSize(new T.Vector3()),r=Math.max(sz.x,sz.y,sz.z);
+  controls.target.set(c.x,Math.max(c.y,sz.y*0.4),c.z);
+  camera.position.set(c.x+r*0.9,c.y+r*0.75,c.z+r*1.7);
+  controls.minDistance=r*0.6;controls.maxDistance=r*6;controls.update();
+  msg.textContent=""}
+ $("#v3dspin").onclick=e=>{spin=!spin;if(controls)controls.autoRotate=spin;e.currentTarget.setAttribute("aria-pressed",spin)};
+ $("#v3dspin").setAttribute("aria-pressed",spin);
+ function loop(){
+  requestAnimationFrame(loop);
+  if(!visible||document.hidden||failed)return;
+  const t=(performance.now()-t0)/1000;
+  if(!reduce){
+   if(parts.Rotor)parts.Rotor.o.rotation.y=t*22;
+   if(parts.TailRotor)parts.TailRotor.o.rotation.x=t*26;
+   if(parts.WingL)parts.WingL.o.rotation.z=Math.sin(t*5)*0.3;
+   if(parts.WingR)parts.WingR.o.rotation.z=-Math.sin(t*5)*0.3;
+   ["UpperBody","Orb"].forEach(n=>{if(parts[n])parts[n].o.position.y=parts[n].y+Math.sin(t*2)*0.06})}
+  controls.update();renderer.render(scene,camera)}
+ pick(FOES[0]);
+ if("IntersectionObserver" in window){
+  new IntersectionObserver(es=>{visible=es[0].isIntersecting;if(visible)start()},{rootMargin:"300px"}).observe(box)}
+ else{visible=true;start()}
+})();
 
 // ---- tester section ----
 const C=CONFIG;
