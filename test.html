@@ -30,10 +30,10 @@ li{margin:6px 0}:focus-visible{outline:3px solid var(--accent);outline-offset:3p
 <script>
 // ---- EDIT THESE before publishing ----
 const CONFIG={
-  GROUP_URL:"https://groups.google.com/g/YOUR-TESTER-GROUP",
-  OPT_IN_URL:"https://play.google.com/apps/testing/YOUR.PACKAGE.NAME",
-  STORE_URL:"https://play.google.com/store/apps/details?id=YOUR.PACKAGE.NAME",
-  EMAIL:"you@example.com"
+  GROUP_URL:"https://groups.google.com/g/workdayblast",
+  OPT_IN_URL:"https://play.google.com/apps/testing/com.masterpaul.workdayblast",
+  STORE_URL:"https://play.google.com/store/apps/details?id=com.masterpaul.workdayblast",
+  EMAIL:"mpsparki012@gmail.com"
 };
 const set=(id,u)=>{const a=document.getElementById(id);if(u.includes("YOUR")){a.classList.add("off");a.textContent+=" (link not set yet)"}else a.href=u};
 set("group",CONFIG.GROUP_URL);set("optin",CONFIG.OPT_IN_URL);set("store",CONFIG.STORE_URL);
